@@ -192,8 +192,67 @@
             color: var(--text);
             font-size: 15px;
         }
+
+        .news-loading {
+            color: var(--muted);
+            padding: 12px 0;
+        }
     </style>
     <script>
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function parseNewsMarkdown(markdown) {
+            const blocks = markdown
+                .split(/\n(?=##\s+)/)
+                .map(block => block.trim())
+                .filter(Boolean);
+
+            return blocks.map(block => {
+                const lines = block.split(/\r?\n/);
+                const dateLine = lines.find(line => line.startsWith('## ')) || '';
+                const titleLine = lines.find(line => line.startsWith('### ')) || '';
+                const bodyLines = lines.filter(line => !line.startsWith('## ') && !line.startsWith('### '));
+
+                return {
+                    date: dateLine.replace(/^##\s+/, '').trim(),
+                    title: titleLine.replace(/^###\s+/, '').trim(),
+                    body: bodyLines.join(' ').trim()
+                };
+            }).filter(post => post.date || post.title || post.body);
+        }
+
+        async function loadNews() {
+            try {
+                const response = await fetch('news.md');
+                const markdown = await response.text();
+                const posts = parseNewsMarkdown(markdown);
+                const newsContainer = document.getElementById('news-content');
+
+                if (posts.length === 0) {
+                    newsContainer.innerHTML = '<p class="news-loading">Ei uutisia vielä.</p>';
+                    return;
+                }
+
+                newsContainer.innerHTML = posts.map(post => {
+                    const date = post.date ? `<div class="news-post-date">${escapeHtml(post.date)}</div>` : '';
+                    const title = post.title ? `<div class="news-post-title">${escapeHtml(post.title)}</div>` : '';
+                    const body = post.body ? `<p>${escapeHtml(post.body)}</p>` : '';
+
+                    return `<article class="news-post">${date}${title}${body}</article>`;
+                }).join('');
+            } catch (error) {
+                console.error('Virhe uutisten lataamisessa:', error);
+                document.getElementById('news-content').innerHTML = '<p class="news-loading">Uutisia ei saatu ladattua.</p>';
+            }
+        }
+
         async function loadRegistrations() {
             try {
                 const response = await fetch('ilmoittautuneet.txt');
@@ -236,6 +295,7 @@
         
         // Load registrations when page loads
         window.addEventListener('load', loadRegistrations);
+        window.addEventListener('load', loadNews);
         
         // Weather icons mapping
         const weatherIcons = {
@@ -309,10 +369,8 @@
         
         <section>
             <h2>Uutiset</h2>
-            <div class="news-post">
-                <div class="news-post-date">11. huhtikuuta 2026</div>
-                <div class="news-post-title">KuoSu ei järjestä bussikuljetusta Jukolaan</div>
-                <p>Koska bussikuljetuksesta kiinnostuneita oli liian vähän, eikä sopivia yhteistyöseuroja löytynyt, sitä ei järjestetä tänä(kään) vuonna. Pahoittelut! Sopikaa kimppakyydeistä esim. KuoSun Jukola 2026 -whatsappissa. Junallakin pääsee Kotka-Jukolaan kätevästi.  </p>
+            <div id="news-content">
+                <p class="news-loading">Ladataan uutisia...</p>
             </div>
         </section>
 
