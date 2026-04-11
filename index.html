@@ -48,7 +48,7 @@
         }
         
         th, td {
-            padding: 12px 15px;
+            padding: 6px 15px;
             text-align: left;
             border-bottom: 1px solid #ecf0f1;
         }
@@ -64,10 +64,14 @@
         }
         
         .update-info {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-top: 10px;
-            font-style: italic;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-top: 20px;
+            padding: 15px 20px;
+            background-color: #ecf0f1;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+            font-weight: 500;
         }
     </style>
     <script>
@@ -83,8 +87,16 @@
                 if (lines.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 20px;">Ei ilmoittautumisia vielä.</td></tr>';
                 } else {
-                    tbody.innerHTML = lines.map(line => {
+                    const registrations = lines.map(line => {
                         const [name, relay] = line.split('\t').map(s => s.trim());
+                        const lastName = name.split(' ').pop();
+                        return { name, relay, lastName };
+                    });
+                    
+                    // Sort by last name
+                    registrations.sort((a, b) => a.lastName.localeCompare(b.lastName, 'fi'));
+                    
+                    tbody.innerHTML = registrations.map(({name, relay}) => {
                         return `<tr><td>${name || '-'}</td><td>${relay || '-'}</td></tr>`;
                     }).join('');
                 }
