@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KuoSun Jukola-info 2026</title>
     <style>
+        :root {
+            --bg: #f4f0f3;
+            --surface: #fffdfd;
+            --text: #2e0f27;
+            --muted: #7a6172;
+            --primary: #5b0d3d;
+            --primary-2: #7b1b55;
+            --accent: #d4b24a;
+            --line: #eadde5;
+            --shadow: rgba(61, 20, 45, 0.12);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,8 +26,10 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top right, #fff6df 0%, transparent 45%),
+                linear-gradient(180deg, #f6f0f4 0%, var(--bg) 100%);
         }
         
         .container {
@@ -23,19 +37,27 @@
             margin: 0 auto;
             padding: 20px;
         }
+
+        .top-logo {
+            display: block;
+            width: min(220px, 60vw);
+            height: auto;
+            margin: 8px auto 10px;
+        }
         
         h1 {
             text-align: center;
             margin: 20px 0;
-            color: #2c3e50;
+            color: var(--primary);
             font-size: clamp(28px, 8vw, 48px);
+            text-shadow: 0 1px 0 #ffffff;
         }
         
         h2 {
             margin: 30px 0 15px 0;
-            color: #34495e;
+            color: var(--primary);
             font-size: clamp(22px, 6vw, 32px);
-            border-bottom: 2px solid #3498db;
+            border-bottom: 3px solid var(--accent);
             padding-bottom: 10px;
         }
         
@@ -43,35 +65,38 @@
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: var(--surface);
+            box-shadow: 0 8px 18px var(--shadow);
+            border-radius: 10px;
+            overflow: hidden;
         }
         
         th, td {
             padding: 6px 15px;
             text-align: left;
-            border-bottom: 1px solid #ecf0f1;
+            border-bottom: 1px solid var(--line);
         }
         
         th {
-            background-color: #3498db;
-            color: white;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
+            color: #fff;
             font-weight: 600;
         }
         
         tr:hover {
-            background-color: #f9f9f9;
+            background-color: #fdf5e4;
         }
         
         .update-info {
             font-size: 16px;
-            color: #2c3e50;
+            color: var(--text);
             margin-top: 20px;
             padding: 15px 20px;
-            background-color: #ecf0f1;
-            border-left: 4px solid #3498db;
+            background-color: #fff8e8;
+            border-left: 5px solid var(--accent);
             border-radius: 4px;
             font-weight: 500;
+            box-shadow: 0 4px 12px var(--shadow);
         }
         
         .weather-container {
@@ -82,17 +107,18 @@
         }
         
         .weather-day {
-            background-color: white;
+            background-color: var(--surface);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 16px var(--shadow);
             text-align: center;
+            border: 1px solid var(--line);
         }
         
         .weather-day h3 {
             margin: 0 0 10px 0;
             font-size: 14px;
-            color: #34495e;
+            color: var(--primary);
         }
         
         .weather-icon {
@@ -103,19 +129,25 @@
         .weather-temp {
             font-size: 18px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--primary);
             margin: 10px 0;
         }
         
         .weather-desc {
             font-size: 13px;
-            color: #7f8c8d;
+            color: var(--muted);
         }
         
         .weather-loading {
             text-align: center;
-            color: #7f8c8d;
+            color: var(--muted);
             padding: 20px;
+        }
+
+        .section-note {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 15px;
         }
     </style>
     <script>
@@ -226,6 +258,7 @@
 </head>
 <body>
     <div class="container">
+        <img src="logo.jpg" alt="Kuopion Suunnistajat logo" class="top-logo">
         <h1>KuoSun Jukola-info 2026</h1>
         
         <section>
@@ -265,7 +298,7 @@
         
         <section>
             <h2>Sää</h2>
-            <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 15px;">5 päivän sääennuste - Kymin Lentokenttä, Kotka</p>
+            <p class="section-note">5 päivän sääennuste - Kymin Lentokenttä, Kotka</p>
             <div class="weather-container" id="weather">
                 <div class="weather-loading">Ladataan säätietoja...</div>
             </div>
