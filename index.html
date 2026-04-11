@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KuoSun Jukola-info 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            color: #2c3e50;
+            font-size: clamp(28px, 8vw, 48px);
+        }
+        
+        h2 {
+            margin: 30px 0 15px 0;
+            color: #34495e;
+            font-size: clamp(22px, 6vw, 32px);
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .update-info {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+    <script>
+        async function loadRegistrations() {
+            try {
+                const response = await fetch('ilmoittautuneet.txt');
+                const text = await response.text();
+                const lines = text.trim().split('\n').filter(line => line.trim());
+                
+                const tbody = document.getElementById('registrations');
+                const updateDateSpan = document.getElementById('update-date');
+                
+                if (lines.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 20px;">Ei ilmoittautumisia vielä.</td></tr>';
+                } else {
+                    tbody.innerHTML = lines.map(line => {
+                        const [name, relay] = line.split('\t').map(s => s.trim());
+                        return `<tr><td>${name || '-'}</td><td>${relay || '-'}</td></tr>`;
+                    }).join('');
+                }
+                
+                // Get file modification date by fetching headers
+                try {
+                    const headResponse = await fetch('ilmoittautuneet.txt', { method: 'HEAD' });
+                    const lastModified = headResponse.headers.get('last-modified');
+                    if (lastModified) {
+                        const date = new Date(lastModified);
+                        const formattedDate = date.toLocaleDateString('fi-FI', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        updateDateSpan.textContent = formattedDate;
+                    }
+                } catch (e) {
+                    updateDateSpan.textContent = 'tuntematon';
+                }
+            } catch (error) {
+                console.error('Virhe ladattaessa ilmoittautumisia:', error);
+                document.getElementById('registrations').innerHTML = '<tr><td colspan="2" style="text-align: center; color: red;">Virhe tietojen lataamisessa</td></tr>';
+            }
+        }
+        
+        // Load registrations when page loads
+        window.addEventListener('load', loadRegistrations);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>KuoSun Jukola-info 2026</h1>
+        
+        <section>
+            <h2>Ilmoittautuneet</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nimi</th>
+                        <th>Osuus</th>
+                    </tr>
+                </thead>
+                <tbody id="registrations">
+                    <!-- Ilmoittautuneet lisätään tähän -->
+                </tbody>
+            </table>
+            <div class="update-info">
+                <p>Tiedot päivitetty: <span id="update-date">-</span></p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
