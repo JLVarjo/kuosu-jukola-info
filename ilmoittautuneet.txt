@@ -3,7 +3,6 @@ Olli Himanen	Jukolan viestiin
 Jukka Tiitto	Jukolan viestiin
 Sanna Multala	Venlojen viestiin
 Otso Hyvönen	Jukolan viestiin
-Mirjami Ahonen	Venlojen viestiin
 Elina Turunen	Venlojen viestiin
 Liinu Vepsäläinen	Venlojen viestiin
 Siiri Hämäläinen	Venlojen viestiin
@@ -45,4 +44,4 @@ Sinikka Kukkola	Vain varapaikalle Venlojen viestiin
 Olli Rytkönen 	Jukolan viestiin
 Tarja Kinnunen	Vain varapaikalle Venlojen viestiin
 
-20.4.2026 klo 7.44
+22.4.2026 klo 22.54
