@@ -206,6 +206,17 @@
             color: var(--muted);
             padding: 12px 0;
         }
+
+        .reserve-title {
+            margin-top: 10px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .reserve-row {
+            color: var(--text);
+            font-size: 15px;
+        }
     </style>
     <script>
         function escapeHtml(text) {
@@ -257,11 +268,27 @@
         function parseTeamMarkdown(markdown) {
             const lines = markdown.split(/\r?\n/);
             const teams = [];
+            const reserves = [];
             let currentTeam = null;
+            let inReserveSection = false;
 
             for (const rawLine of lines) {
                 const line = rawLine.trim();
                 if (!line) {
+                    continue;
+                }
+
+                if (/^Varalla\s*:/i.test(line)) {
+                    if (currentTeam) {
+                        teams.push(currentTeam);
+                        currentTeam = null;
+                    }
+                    inReserveSection = true;
+                    continue;
+                }
+
+                if (inReserveSection) {
+                    reserves.push(line);
                     continue;
                 }
 
@@ -290,22 +317,24 @@
                 teams.push(currentTeam);
             }
 
-            return teams;
+            return { teams, reserves };
         }
 
-        function renderTeamTables(teams, containerId, emptyText) {
+        function renderTeamTables(teamData, containerId, emptyText) {
             const container = document.getElementById(containerId);
+            const teams = teamData.teams || [];
+            const reserves = teamData.reserves || [];
 
             if (!container) {
                 return;
             }
 
-            if (teams.length === 0) {
+            if (teams.length === 0 && reserves.length === 0) {
                 container.innerHTML = `<p class="news-loading">${escapeHtml(emptyText)}</p>`;
                 return;
             }
 
-            container.innerHTML = teams.map(team => {
+            const tablesHtml = teams.map(team => {
                 const rows = team.legs.map(({ leg, runner }) => {
                     return `<tr><td>${escapeHtml(leg)}</td><td>${escapeHtml(runner || '-')}</td></tr>`;
                 }).join('');
@@ -327,14 +356,25 @@
                     </article>
                 `;
             }).join('');
+
+            const reserveHtml = reserves.length > 0
+                ? `
+                    <article class="news-post">
+                        <p class="reserve-title">Varalla:</p>
+                        ${reserves.map(name => `<p class="reserve-row">${escapeHtml(name)}</p>`).join('')}
+                    </article>
+                `
+                : '';
+
+            container.innerHTML = `${tablesHtml}${reserveHtml}`;
         }
 
         async function loadTeamTables(fileName, containerId, emptyText) {
             try {
                 const response = await fetch(fileName);
                 const markdown = await response.text();
-                const teams = parseTeamMarkdown(markdown);
-                renderTeamTables(teams, containerId, emptyText);
+                const teamData = parseTeamMarkdown(markdown);
+                renderTeamTables(teamData, containerId, emptyText);
             } catch (error) {
                 console.error(`Virhe ladattaessa tiedostoa ${fileName}:`, error);
                 const container = document.getElementById(containerId);
