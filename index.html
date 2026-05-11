@@ -254,6 +254,104 @@
             }).filter(post => post.date || post.title || post.body);
         }
 
+        function parseTeamMarkdown(markdown) {
+            const lines = markdown.split(/\r?\n/);
+            const teams = [];
+            let currentTeam = null;
+
+            for (const rawLine of lines) {
+                const line = rawLine.trim();
+                if (!line) {
+                    continue;
+                }
+
+                if (line.startsWith('## ')) {
+                    if (currentTeam) {
+                        teams.push(currentTeam);
+                    }
+
+                    currentTeam = {
+                        name: line.replace(/^##\s+/, '').trim(),
+                        legs: []
+                    };
+                    continue;
+                }
+
+                const legMatch = line.match(/^\|([^|]+)\|([^|]+)\|$/);
+                if (legMatch && currentTeam) {
+                    currentTeam.legs.push({
+                        leg: legMatch[1].trim(),
+                        runner: legMatch[2].trim()
+                    });
+                }
+            }
+
+            if (currentTeam) {
+                teams.push(currentTeam);
+            }
+
+            return teams;
+        }
+
+        function renderTeamTables(teams, containerId, emptyText) {
+            const container = document.getElementById(containerId);
+
+            if (!container) {
+                return;
+            }
+
+            if (teams.length === 0) {
+                container.innerHTML = `<p class="news-loading">${escapeHtml(emptyText)}</p>`;
+                return;
+            }
+
+            container.innerHTML = teams.map(team => {
+                const rows = team.legs.map(({ leg, runner }) => {
+                    return `<tr><td>${escapeHtml(leg)}</td><td>${escapeHtml(runner || '-')}</td></tr>`;
+                }).join('');
+
+                return `
+                    <article class="news-post">
+                        <div class="news-post-title">${escapeHtml(team.name)}</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Osuus</th>
+                                    <th>Nimi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        async function loadTeamTables(fileName, containerId, emptyText) {
+            try {
+                const response = await fetch(fileName);
+                const markdown = await response.text();
+                const teams = parseTeamMarkdown(markdown);
+                renderTeamTables(teams, containerId, emptyText);
+            } catch (error) {
+                console.error(`Virhe ladattaessa tiedostoa ${fileName}:`, error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<p class="news-loading">Joukkuetietoja ei saatu ladattua.</p>';
+                }
+            }
+        }
+
+        function loadVenlaTeams() {
+            return loadTeamTables('venlat.md', 'venla-teams', 'Venlajoukkueita ei löytynyt.');
+        }
+
+        function loadJukolaTeams() {
+            return loadTeamTables('jussit.md', 'jukola-teams', 'Jukolajoukkueita ei löytynyt.');
+        }
+
         async function loadNews() {
             try {
                 const response = await fetch('news.md');
@@ -338,6 +436,8 @@
         window.addEventListener('load', loadRegistrations);
         window.addEventListener('load', loadNews);
         window.addEventListener('load', updateJukolaCountdown);
+        window.addEventListener('load', loadVenlaTeams);
+        window.addEventListener('load', loadJukolaTeams);
         
         // Weather icons mapping
         const weatherIcons = {
@@ -445,8 +545,17 @@
         </section>
         
         <section>
-            <h2>Joukkueet</h2>
-            <p>Joukkueet julkistetaan toukokuun alkupuolella.</p>
+            <h2>Venlajoukkueet</h2>
+            <div id="venla-teams">
+                <p class="news-loading">Ladataan Venlajoukkueita...</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Jukolajoukkueet</h2>
+            <div id="jukola-teams">
+                <p class="news-loading">Ladataan Jukolajoukkueita...</p>
+            </div>
         </section>
         
         <section>
